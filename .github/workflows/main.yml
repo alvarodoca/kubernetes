@@ -27,14 +27,14 @@ jobs:
 
       - name: Deploy to EKS
         run: |
-          kubectl apply -f k8s/deployment_mysql.yml
-          kubectl apply -f k8s/deployment_php_fpm.yml
-          kubectl apply -f k8s/deployment_web.yml
-          kubectl apply -f k8s/pvc_mysql.yml
-          kubectl apply -f k8s/pvc.yml
-          kubectl apply -f k8s/service_mysql.yml
-          kubectl apply -f k8s/service_php-fpm.yml
-          kubectl apply -f k8s/service_web.yml
+          kubectl apply -f deployment_mysql.yml
+          kubectl apply -f deployment_php_fpm.yml
+          kubectl apply -f deployment_web.yml
+          kubectl apply -f pvc_mysql.yml
+          kubectl apply -f pvc.yml
+          kubectl apply -f service_mysql.yml
+          kubectl apply -f service_php-fpm.yml
+          kubectl apply -f service_web.yml
 
       - name: Verify deployment
         run: |
