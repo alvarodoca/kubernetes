@@ -1,0 +1,42 @@
+name: Deploy to EKS
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up AWS CLI
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: us-east-1
+
+      - name: Set up kubectl
+        uses: aws-actions/amazon-eks-kubectl-action@v1
+        with:
+          cluster-name: mi-cluster
+          region: us-east-1
+
+      - name: Deploy to EKS
+        run: |
+          kubectl apply -f k8s/deployment_mysql.yml
+          kubectl apply -f k8s/deployment_php_fpm.yml
+          kubectl apply -f k8s/deployment_web.yml
+          kubectl apply -f k8s/pvc_mysql.yml
+          kubectl apply -f k8s/pvc.yml
+          kubectl apply -f k8s/service_mysql.yml
+          kubectl apply -f k8s/service_php-fpm.yml
+          kubectl apply -f k8s/service_web.yml
+          
+
+      - name: Verify deployment
+        run: |
+          kubectl rollout status deployment/my-deployment
