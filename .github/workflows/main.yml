@@ -35,6 +35,6 @@ jobs:
 
       - name: Verify deployment
         run: |
-          kubectl rollout status mysql-deployment
+          kubectl rollout status mysql
           kubectl rollout status php-fpm-deployment
           kubectl rollout status web-deployment
