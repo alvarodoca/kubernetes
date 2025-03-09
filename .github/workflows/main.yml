@@ -20,7 +20,7 @@ jobs:
           aws-region: us-east-1
 
       - name: Update kubeconfig
-        run: aws eks update-kubeconfig --name ciclo --region us-east-1
+        run: aws eks update-kubeconfig --name mi-cluster --region us-east-1
 
       - name: Apply Kubernetes manifests
         run: |
