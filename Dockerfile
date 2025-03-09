@@ -2,6 +2,11 @@
 FROM debian:latest
 
 # Actualiza los repositorios y instala Nginx
+
+# Imagen base de Debian
+FROM debian:latest
+
+# Instalar Nginx
 RUN apt-get update && apt-get install -y \
     nginx \
     && rm -rf /var/lib/apt/lists/*
@@ -25,5 +30,24 @@ RUN chown -R www-data:www-data /etc/nginx /usr/share/nginx/html
 # Expone los puertos 80 (HTTP) y 443 (HTTPS)
 EXPOSE 80 443
 
-# Inicia Nginx cuando el contenedor se ejecute
+
+# Copiar los archivos de configuración de Nginx
+COPY nginxv1.conf /etc/nginx/nginx.conf
+COPY nginxv2.conf /etc/nginx/nginxv2.conf
+
+# Copiar los certificados SSL
+COPY certificados/ca_bundle.crt /etc/nginx/ssl/ca_bundle.crt
+COPY certificados/certificate.crt /etc/nginx/ssl/certificate.crt
+COPY certificados/private.key /etc/nginx/ssl/private.key
+
+# Copiar el contenido de la web (index.html) al directorio raíz
+COPY index.html /usr/share/nginx/html/index.html
+
+# Copiar la carpeta 'secure' donde está el index.html y otros archivos estáticos
+COPY secure /usr/share/nginx/html/secure
+
+# Exponer los puertos HTTP y HTTPS
+EXPOSE 80 443
+
+# Comando para ejecutar Nginx en primer plano
 CMD ["nginx", "-g", "daemon off;"]

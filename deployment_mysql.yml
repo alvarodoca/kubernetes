@@ -1,0 +1,123 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      volumes:
+        - name: mysql-data
+          persistentVolumeClaim:
+            claimName: mysql-pvc
+
+      containers:
+        - name: mysql
+          image: mysql:5.7
+          imagePullPolicy: Always
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: "rootpassword"
+            - name: MYSQL_DATABASE
+              value: "f1"
+            - name: MYSQL_USER
+              value: "usuario"
+            - name: MYSQL_PASSWORD
+              value: "password"
+          ports:
+            - containerPort: 3306
+          volumeMounts:
+            - name: mysql-data
+              mountPath: /var/lib/mysql
+
+      initContainers:
+        - name: init-mysql
+          image: mysql:5.7
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              echo "Creando script SQL..."
+              cat <<EOF > /docker-entrypoint-initdb.d/init.sql
+              SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+              START TRANSACTION;
+              SET time_zone = "+00:00";
+              
+              CREATE TABLE clasificacion (
+                equipo VARCHAR(45) NOT NULL,
+                puntos INT(15) NOT NULL DEFAULT 0,
+                PRIMARY KEY (equipo)
+              ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+              INSERT INTO clasificacion (equipo, puntos) VALUES
+              ('Aston Martin Aramco F1 Team', 94),
+              ('BWT Alpine F1 Team', 65),
+              ('McLaren Formula 1 Team', 666),
+              ('Mercedes-AMG PETRONAS F1 Team', 468),
+              ('MoneyGram Haas F1 Team', 58),
+              ('Oracle Red Bull Racing', 589),
+              ('Scuderia Ferrari HP', 652),
+              ('Stake F1 Team Kick Sauber', 4),
+              ('Visa Cash App RB Formula One Team', 46),
+              ('Williams Racing', 17);
+
+              CREATE TABLE escuderias (
+                escuderia VARCHAR(45) NOT NULL,
+                coche VARCHAR(20) NOT NULL,
+                color VARCHAR(15) NOT NULL,
+                piloto1 VARCHAR(50) NOT NULL,
+                piloto2 VARCHAR(50) NOT NULL,
+                director VARCHAR(50) NOT NULL,
+                PRIMARY KEY (escuderia)
+              ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+              INSERT INTO escuderias (escuderia, coche, color, piloto1, piloto2, director) VALUES
+              ('Aston Martin Aramco F1 Team', 'AMR24', 'Verde', '14, Fernando Alonso', '18, Lance Stroll', 'Mike Krack'),
+              ('BWT Alpine F1 Team', 'A524', 'Azul', '10, Pierre Gasly', '31, Esteban Ocon', 'Oliver Oakes'),
+              ('McLaren Formula 1 Team', 'MCL38', 'Naranja', '4, Lando Norris', '81, Oscar Piastri', 'Andrea Stella'),
+              ('Mercedes-AMG PETRONAS F1 Team', ' W15', 'Plateado', '44, Lewis Hamilton', '63, George Russell', 'Toto Wolff'),
+              ('MoneyGram Haas F1 Team', 'VF-24', 'Blanco', '27, Nico Hulkenberg', '20, Kevin Magnussen', 'Ayao Komatsu'),
+              ('Oracle Red Bull Racing', 'RB20', 'Azul oscuro', '1, Max Verstappen', '11, Sergio Perez', 'Christian Horner'),
+              ('Scuderia Ferrari HP', 'SF-24', 'Rojo', '16, Charles Leclerc', '55, Carlos Sainz', 'Frédéric Vasseur'),
+              ('Stake F1 Team Kick Sauber', 'C44', 'Verde claro', '77, Valtteri Bottas', '24, Guanyu Zhou', 'Alessandro Alunni Bravi'),
+              ('Visa Cash App RB Formula One Team', 'VCARB 01', 'Azul cerúleo', '22, Yuki Tsunoda', '30, Liam Lawson', ' Laurent Mekies'),
+              ('Williams Racing', ' FW46', 'Azul cielo', '23, Alexander Albon', '43, Franco Colapinto', ' James Vowles');
+
+              CREATE TABLE socios (
+                dni VARCHAR(15) NOT NULL,
+                nombre VARCHAR(25) NOT NULL,
+                apellidos VARCHAR(50) NOT NULL,
+                telefono VARCHAR(15) NOT NULL,
+                fecha_nac VARCHAR(15) NOT NULL,
+                contrasena VARCHAR(30) NOT NULL,
+                clase ENUM('vip','premiun','deluxe','gold','general','libre') NOT NULL,
+                PRIMARY KEY (dni)
+              ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+              INSERT INTO socios (dni, nombre, apellidos, telefono, fecha_nac, contrasena, clase) VALUES
+              ('77449764K', 'Álvaro', 'Domingo Castillo', '66644879', '2004-12-23', '1234', 'vip'),
+              ('77749724M', 'neus', 'breau ruiz', '666666666', '2006-04-05', 'a1234', 'vip'),
+              ('89456321A', 'Pedro', 'López Sánchez', '696453216', '2000-01-5', '1111', 'deluxe'),
+              ('admin', 'admin', 'admin', '678945213', '0-0-0', 'admin', 'vip');
+              EOF
+          volumeMounts:
+            - name: mysql-data
+              mountPath: /var/lib/mysql
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+spec:
+  selector:
+    app: mysql
+  ports:
+    - protocol: TCP
+      port: 3306
+      targetPort: 3306

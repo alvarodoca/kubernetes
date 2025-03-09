@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: php-fpm-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: php-fpm
+  template:
+    metadata:
+      labels:
+        app: php-fpm
+    spec:
+      containers:
+        - name: php-fpm
+          image: php:8.0-fpm
+          imagePullPolicy: Always
+          env:
+            - name: DB_HOST
+              value: "mysql"
+            - name: DB_USER
+              value: "usuario"
+            - name: DB_PASSWORD
+              value: "usuario"
+            - name: DB_NAME
+              value: "f1"
+          ports:
+            - containerPort: 9000
+          volumeMounts:
+            - name: php-files
+              mountPath: /var/www/html
+      imagePullSecrets:
+        - name: ecr-secret
+      volumes:
+        - name: php-files
+          persistentVolumeClaim:
+            claimName: php-pvc
