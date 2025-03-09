@@ -1,18 +1,16 @@
 name: Deploy to EKS
 
 on:
-  workflow_dispatch:  # Puedes ejecutar el flujo de trabajo manualmente
+  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # Paso 1: Checkout del código
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # Paso 2: Configurar AWS CLI
       - name: Set up AWS CLI
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -21,14 +19,12 @@ jobs:
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: us-east-1
 
-      # Paso 3: Configurar kubectl para interactuar con EKS
       - name: Set up kubectl
-        uses: aws-actions/amazon-eks-kubectl-action@v1
+        uses: aws-actions/eks-kubectl-action@v1
         with:
-          cluster-name: mi-cluster  # Asegúrate de que este nombre es correcto
+          cluster-name: mi-cluster
           region: us-east-1
 
-      # Paso 4: Desplegar los recursos a EKS
       - name: Deploy to EKS
         run: |
           kubectl apply -f k8s/deployment_mysql.yml
@@ -40,9 +36,8 @@ jobs:
           kubectl apply -f k8s/service_php-fpm.yml
           kubectl apply -f k8s/service_web.yml
 
-      # Paso 5: Verificar que el despliegue se haya completado
       - name: Verify deployment
         run: |
-          kubectl rollout status deployment/mysql-deployment  # Cambia a los nombres correctos de tus deployments
-          kubectl rollout status deployment/php-fpm-deployment  # Si tienes otro deployment para PHP-FPM
-          kubectl rollout status deployment/web-deployment     # Si tienes otro deployment para la aplicación web
+          kubectl rollout status deployment/mysql-deployment
+          kubectl rollout status deployment/php-fpm-deployment
+          kubectl rollout status deployment/web-deployment
