@@ -1,35 +1,30 @@
 name: Deploy to EKS
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - eks
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
-      - name: Set up AWS CLI
-        uses: aws-actions/configure-aws-credentials@v1
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: us-east-1
 
-      - name: Set up kubectl
-        uses: aws-actions/amazon-eks-kubectl-action@v1
-        with:
-          cluster-name: mi-cluster
-          region: us-east-1
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --name ciclo --region us-east-1
 
-      - name: Verify kubectl connection
-        run: |
-          kubectl get svc   # Esto verifica que kubectl puede acceder al servicio de Kubernetes
-
-      - name: Deploy to EKS
+      - name: Apply Kubernetes manifests
         run: |
           kubectl apply -f deployment_mysql.yml
           kubectl apply -f deployment_php_fpm.yml
@@ -42,6 +37,6 @@ jobs:
 
       - name: Verify deployment
         run: |
-          kubectl rollout status deployment/mysql-deployment
-          kubectl rollout status deployment/php-fpm-deployment
-          kubectl rollout status deployment/web-deployment
+          kubectl rollout status mysql-deployment
+          kubectl rollout status php-fpm-deployment
+          kubectl rollout status web-deployment
