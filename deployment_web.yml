@@ -23,7 +23,7 @@ spec:
             - containerPort: 443
           volumeMounts:
             - name: php-files
-              mountPath: /usr/share/nginx/html
+              mountPath: /var/www/html
       volumes:
         - name: php-files
           persistentVolumeClaim:
